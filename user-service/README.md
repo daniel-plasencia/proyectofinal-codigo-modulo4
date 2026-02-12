@@ -117,7 +117,7 @@ docker logs postgres-user
 
 
 
-### 4.- Dockerizar product-service
+### 4.- Dockerizar user-service
 
 #### Compilar con perfil Kubernetes
 
@@ -184,7 +184,7 @@ user-service:1.0
 # En otra terminal, probar
 
 # Health check
-curl http://localhost:8082/actuator/health
+curl http://localhost:8081/actuator/health
 
 # Health check
 curl http://localhost:8081/actuator/health

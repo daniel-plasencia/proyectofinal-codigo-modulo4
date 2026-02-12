@@ -11,7 +11,7 @@
 ┌──────────▼─────────┐  ┌──────▼──────────┐
 │  user-service      │←─┤ product-service │
 │  Namespace         │  │ Namespace       │
-│  (3 pods)          │  │ (3 pods)        │
+│  (1 pods)          │  │ (1 pods)        │
 └────────────────────┘  └─────────────────┘
          ↓                       ↓
     PostgreSQL             PostgreSQL
