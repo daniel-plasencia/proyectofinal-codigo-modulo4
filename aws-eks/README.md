@@ -718,7 +718,7 @@ kubectl get ingress -w
 # NAME                    CLASS   HOSTS   ADDRESS                                              PORTS   AGE
 # microservices-ingress   alb     *       k8s-default-microser-xxxx.us-east-1.elb.amazonaws.com   80      2m
 ```
-- **NOTA** Si no aparece ningún valor en el ADDRESS ejecutar el paso **6.2: Patch el ALB**
+- **NOTA** Si no aparece ningún valor en el ADDRESS ejecutar el paso **6.3: Patch el ALB**
 
 
 ## 6.2:  Verificar que NO hay errores en el ALB:
@@ -751,7 +751,7 @@ curl http://$ALB_URL/api/products
 ```
 
 
-## 6.2: Patch el ALB
+## 6.3: Patch el ALB
 
 AccessDenied: User is not authorized to perform: 
 
