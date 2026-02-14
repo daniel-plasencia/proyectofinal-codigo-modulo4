@@ -25,6 +25,8 @@ import java.util.List;
 public class ProductController {
     
     private final ProductApplicationService productApplicationService;
+    
+    // Mapper para convertir entre DTOs de presentación y modelo de dominio
     private final ProductDtoMapper productDtoMapper;
     
     /**
@@ -48,7 +50,7 @@ public class ProductController {
     }
     
     /**
-     * Obtiene un producto por ID
+     * Obtiene un producto por ID 
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {

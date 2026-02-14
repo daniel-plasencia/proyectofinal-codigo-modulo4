@@ -34,6 +34,7 @@ public interface ProductDtoMapper {
     
     /**
      * Convierte lista de Products a lista de ProductResponse
+     * Con el mismo mapeo para cada elemento de la lista
      */
     List<ProductResponse> toResponseList(List<Product> products);
 }
