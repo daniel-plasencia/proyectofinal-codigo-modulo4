@@ -322,7 +322,12 @@ spec:
 
 - Configurar Contexto para Docker Desktop
 ```
+# Ver los contextos
+kubectl config get-contexts
+
+# Cambiar al contexto de Docker Desktop
 kubectl config use-context docker-desktop
+
 ```
 
 - Borrar el despliegue de user-service
