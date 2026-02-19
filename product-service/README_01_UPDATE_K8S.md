@@ -29,6 +29,19 @@ data:
   JWT_SECRET: bTFTM2NyM3RLM3lKV1RfVDNjc3VwMjAyNSFAI1NlY3VyZVRva2Vu  # Misma clave que user-service para validar tokens
 ```
 
+
+- Agregar lo siguiente en el archivo  k8s/03-deployment.yaml
+
+```
+            .....
+            
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: product-service-secret
+                  key: JWT_SECRET
+```
+
 ### 2.- Volver a redesplegar product-service en Kubernetes . Ver README.md para comandos detallados
 
 ```
