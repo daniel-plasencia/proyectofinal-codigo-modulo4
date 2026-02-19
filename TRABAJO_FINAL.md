@@ -43,7 +43,7 @@ El reto principal es que el Order Service **depende de dos servicios externos**:
             ▼              ▼              ▼
        ┌────────┐     ┌─────────┐    ┌────────┐
        │userdb  │     │productdb│    │orderdb │ ◄── NUEVA BD
-       │ :5432  │     │ :5433   │    │ :5434  │
+       │ :5434  │     │ :5433   │    │ :5435  │
        └────────┘     └─────────┘    └────────┘
 
 COMUNICACIÓN:
