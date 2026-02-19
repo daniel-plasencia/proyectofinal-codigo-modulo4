@@ -47,7 +47,6 @@ El reto principal es que el Order Service **depende de dos servicios externos**:
        └────────┘     └─────────┘    └────────┘
 
 COMUNICACIÓN:
-Order Service ──(HTTP )──► User Service
 Order Service ──(HTTP )──► Product Service
 ```
 
