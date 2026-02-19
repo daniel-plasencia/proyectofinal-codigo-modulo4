@@ -51,6 +51,9 @@ mvn clean package -DskipTests
 # Construir imagen Docker
 docker build -t product-service:1.0 .
 
+# Configurar Contexto para Docker Desktop
+kubectl config use-context docker-desktop
+
 # Actualizar el Secret con las nuevas variables de entorno codificadas en base64
 kubectl apply -f product-service/k8s/02-secret.yaml 
 
