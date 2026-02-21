@@ -12,10 +12,19 @@
 2. [Arquitectura del Sistema](#arquitectura-del-sistema)
 3. [Prerequisitos](#prerequisitos)
 4. [Instalación y Despliegue](#instalación-y-despliegue)
-5. [Pruebas de Endpoints](#pruebas-de-endpoints)
-6. [Flujo Completo del Sistema](#flujo-completo-del-sistema)
+5. [Pruebas de Endpoints](#pruebas-de-endpoints-con-postman)
+6. [Flujo Completo del Sistema](#flujo-completo-del-sistema-con-postman)
 7. [Modelo de Datos](#modelo-de-datos)
 8. [Troubleshooting](#troubleshooting)
+
+---
+
+## 📌 NOTA IMPORTANTE
+
+**Todas las pruebas de endpoints se realizan usando Postman.**  
+Asegúrate de tener Postman instalado antes de comenzar las pruebas.
+
+**Descargar Postman:** https://www.postman.com/downloads/
 
 ---
 
@@ -171,6 +180,7 @@ Respuesta 201 Created
 
 #### ✅ Product Service debe estar corriendo
 
+**Verificar en Kubernetes:**
 ```powershell
 # Verificar que product-service está en Kubernetes
 kubectl get all -n product-service
@@ -179,12 +189,14 @@ kubectl get all -n product-service
 # - 1 pod corriendo (STATUS: Running)
 # - 1 deployment
 # - 1 service (NodePort 30082)
-
-# Probar que product-service funciona
-Invoke-WebRequest -Uri http://localhost:30082/api/products -UseBasicParsing
 ```
 
-**Output esperado:**
+**Probar que product-service funciona (en Postman):**
+- **Method:** `GET`
+- **URL:** `http://localhost:30082/api/products`
+- **Send**
+
+**Response esperado:**
 ```json
 [
   {
@@ -316,14 +328,14 @@ docker run -p 8083:8083 `
   order-service:1.0
 ```
 
-**En otra terminal, probar:**
-```powershell
-# Health check
-Invoke-WebRequest -Uri http://localhost:8083/actuator/health -UseBasicParsing
-
-# Listar órdenes
-Invoke-WebRequest -Uri http://localhost:8083/api/orders -UseBasicParsing
-```
+**En Postman, probar:**
+- **Health check:**
+  - Method: `GET`
+  - URL: `http://localhost:8083/actuator/health`
+  
+- **Listar órdenes:**
+  - Method: `GET`
+  - URL: `http://localhost:8083/api/orders`
 
 **Detener contenedor:** `Ctrl+C` en la terminal donde corre
 
@@ -447,17 +459,45 @@ kubectl logs -f $POD_NAME -n order-service
 
 ---
 
-## 🧪 PRUEBAS DE ENDPOINTS
+## 🧪 PRUEBAS DE ENDPOINTS CON POSTMAN
+
+> **Nota:** Todas las pruebas se realizan usando **Postman**. Asegúrate de tener Postman instalado.
+
+### Configuración Inicial en Postman
+
+1. **Crear una nueva Collection:**
+   - Abre Postman
+   - Click en "New" → "Collection"
+   - Nombre: `Order Service - Trabajo Final`
+
+2. **Crear una Variable de Entorno (opcional pero recomendado):**
+   - Click en "Environments" → "Create Environment"
+   - Nombre: `Order Service Local`
+   - Agregar variable:
+     - Variable: `base_url`
+     - Initial Value: `http://localhost:30083`
+   - Click "Save"
+
+---
 
 ### Endpoint 1: Health Check (Público)
 
-**Verificar que el servicio está corriendo:**
+**Verificar que el servicio está corriendo**
 
-```powershell
-Invoke-WebRequest -Uri http://localhost:30083/actuator/health -UseBasicParsing
-```
+#### Configuración en Postman:
 
-**Response esperado (200 OK):**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/actuator/health`
+- **Headers:** (ninguno necesario)
+
+#### Pasos:
+
+1. Selecciona método **GET**
+2. Ingresa la URL: `http://localhost:30083/actuator/health`
+3. Click en **Send**
+
+#### Response esperado (200 OK):
+
 ```json
 {
   "status": "UP",
@@ -471,12 +511,20 @@ Invoke-WebRequest -Uri http://localhost:30083/actuator/health -UseBasicParsing
 
 **GET** `/api/orders`
 
-```powershell
-$response = Invoke-WebRequest -Uri http://localhost:30083/api/orders -UseBasicParsing
-$response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
-```
+#### Configuración en Postman:
 
-**Response esperado (200 OK):**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders`
+- **Headers:** (ninguno necesario)
+
+#### Pasos:
+
+1. Selecciona método **GET**
+2. Ingresa la URL: `http://localhost:30083/api/orders`
+3. Click en **Send**
+
+#### Response esperado (200 OK):
+
 ```json
 [
   {
@@ -497,7 +545,26 @@ $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
     "createdAt": "2025-02-21T06:56:30",
     "updatedAt": "2025-02-21T06:56:30"
   },
-  ...
+  {
+    "id": 2,
+    "orderNumber": "ORD-2025-002",
+    "userId": 2,
+    "status": "PENDING",
+    "totalAmount": 1199.98,
+    "items": [...],
+    "createdAt": "2025-02-21T06:56:30",
+    "updatedAt": "2025-02-21T06:56:30"
+  },
+  {
+    "id": 3,
+    "orderNumber": "ORD-2025-003",
+    "userId": 1,
+    "status": "SHIPPED",
+    "totalAmount": 149.99,
+    "items": [...],
+    "createdAt": "2025-02-21T06:56:30",
+    "updatedAt": "2025-02-21T06:56:30"
+  }
 ]
 ```
 
@@ -507,11 +574,20 @@ $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
 
 **GET** `/api/orders/{id}`
 
-```powershell
-Invoke-WebRequest -Uri http://localhost:30083/api/orders/1 -UseBasicParsing | Select-Object -ExpandProperty Content
-```
+#### Configuración en Postman:
 
-**Response esperado (200 OK):**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/1`
+- **Headers:** (ninguno necesario)
+
+#### Pasos:
+
+1. Selecciona método **GET**
+2. Ingresa la URL: `http://localhost:30083/api/orders/1`
+3. Click en **Send**
+
+#### Response esperado (200 OK):
+
 ```json
 {
   "id": 1,
@@ -530,6 +606,28 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/1 -UseBasicParsing | Se
       "quantity": 1,
       "unitPrice": 1299.99,
       "subtotal": 1299.99
+    },
+    {
+      "id": 2,
+      "product": {
+        "id": 2,
+        "name": "Mouse Logitech MX Master 3",
+        "price": 99.99
+      },
+      "quantity": 1,
+      "unitPrice": 99.99,
+      "subtotal": 99.99
+    },
+    {
+      "id": 3,
+      "product": {
+        "id": 3,
+        "name": "Teclado Mecánico Keychron K8",
+        "price": 89.99
+      },
+      "quantity": 1,
+      "unitPrice": 89.99,
+      "subtotal": 89.99
     }
   ],
   "createdAt": "2025-02-21T06:56:30",
@@ -537,12 +635,12 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/1 -UseBasicParsing | Se
 }
 ```
 
-**Prueba con ID inexistente:**
-```powershell
-Invoke-WebRequest -Uri http://localhost:30083/api/orders/999 -UseBasicParsing
-```
+#### Prueba con ID inexistente:
 
-**Response esperado (404 Not Found):**
+- **URL:** `http://localhost:30083/api/orders/999`
+
+#### Response esperado (404 Not Found):
+
 ```json
 {
   "error": "Order not found",
@@ -557,11 +655,20 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/999 -UseBasicParsing
 
 **GET** `/api/orders/user/{userId}`
 
-```powershell
-Invoke-WebRequest -Uri http://localhost:30083/api/orders/user/1 -UseBasicParsing | Select-Object -ExpandProperty Content
-```
+#### Configuración en Postman:
 
-**Response esperado (200 OK):**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/user/1`
+- **Headers:** (ninguno necesario)
+
+#### Pasos:
+
+1. Selecciona método **GET**
+2. Ingresa la URL: `http://localhost:30083/api/orders/user/1`
+3. Click en **Send**
+
+#### Response esperado (200 OK):
+
 ```json
 [
   {
@@ -570,7 +677,9 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/user/1 -UseBasicParsing
     "userId": 1,
     "status": "CONFIRMED",
     "totalAmount": 2849.97,
-    ...
+    "items": [...],
+    "createdAt": "2025-02-21T06:56:30",
+    "updatedAt": "2025-02-21T06:56:30"
   },
   {
     "id": 3,
@@ -578,7 +687,9 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/user/1 -UseBasicParsing
     "userId": 1,
     "status": "SHIPPED",
     "totalAmount": 149.99,
-    ...
+    "items": [...],
+    "createdAt": "2025-02-21T06:56:30",
+    "updatedAt": "2025-02-21T06:56:30"
   }
 ]
 ```
@@ -591,36 +702,222 @@ Invoke-WebRequest -Uri http://localhost:30083/api/orders/user/1 -UseBasicParsing
 
 Este es el endpoint principal que cumple con el requerimiento funcional RF-01.
 
-#### 5.1. Preparar Request
+#### Configuración en Postman:
 
-```powershell
-# Crear body JSON
-$body = @{
-    userId = 1
-    items = @(
-        @{
-            productId = 1
-            quantity = 2
-        },
-        @{
-            productId = 3
-            quantity = 1
-        }
-    )
-} | ConvertTo-Json -Depth 10
+- **Method:** `POST`
+- **URL:** `http://localhost:30083/api/orders`
+- **Headers:**
+  - `Content-Type: application/json`
+- **Body:** (seleccionar `raw` y `JSON`)
 
-# Headers
-$headers = @{
-    "Content-Type" = "application/json"
+#### Body JSON:
+
+```json
+{
+  "userId": 1,
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    },
+    {
+      "productId": 3,
+      "quantity": 1
+    }
+  ]
 }
 ```
 
-#### 5.2. Enviar Request
+#### Pasos:
+
+1. Selecciona método **POST**
+2. Ingresa la URL: `http://localhost:30083/api/orders`
+3. Ve a la pestaña **Headers**
+4. Agrega header: `Content-Type: application/json`
+5. Ve a la pestaña **Body**
+6. Selecciona **raw** y **JSON** (dropdown)
+7. Pega el JSON del body mostrado arriba
+8. Click en **Send**
+
+#### Response esperado (201 Created):
+
+```json
+{
+  "id": 4,
+  "orderNumber": "ORD-2025-004",
+  "userId": 1,
+  "items": [
+    {
+      "id": 7,
+      "product": {
+        "id": 1,
+        "name": "Laptop Dell XPS 15",
+        "price": 1299.99
+      },
+      "quantity": 2,
+      "unitPrice": 1299.99,
+      "subtotal": 2599.98
+    },
+    {
+      "id": 8,
+      "product": {
+        "id": 3,
+        "name": "Teclado Mecánico Keychron K8",
+        "price": 89.99
+      },
+      "quantity": 1,
+      "unitPrice": 89.99,
+      "subtotal": 89.99
+    }
+  ],
+  "totalAmount": 2689.97,
+  "status": "PENDING",
+  "createdAt": "2025-02-21T10:30:00"
+}
+```
+
+#### Verificar en Base de Datos (opcional):
 
 ```powershell
-$response = Invoke-RestMethod -Uri http://localhost:30083/api/orders -Method POST -Headers $headers -Body $body
-$response | ConvertTo-Json -Depth 10
+# Conectarse a PostgreSQL
+docker exec -it postgres-order psql -U postgres -d orderdb
+
+# Verificar orden creada
+SELECT id, order_number, user_id, status, total_amount FROM orders WHERE id = 4;
+
+# Verificar items creados
+SELECT id, order_id, product_id, quantity, unit_price, subtotal 
+FROM order_items WHERE order_id = 4;
 ```
+
+---
+
+### Endpoint 6: Health Endpoint Personalizado
+
+**GET** `/api/orders/health`
+
+#### Configuración en Postman:
+
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/health`
+- **Headers:** (ninguno necesario)
+
+#### Pasos:
+
+1. Selecciona método **GET**
+2. Ingresa la URL: `http://localhost:30083/api/orders/health`
+3. Click en **Send**
+
+#### Response esperado (200 OK):
+
+```
+Order Service running with Clean Architecture!
+```
+
+---
+
+## 🔄 FLUJO COMPLETO DEL SISTEMA CON POSTMAN
+
+### Escenario Completo: Simulación de E-commerce
+
+Este flujo demuestra el funcionamiento completo del sistema según el TRABAJO_FINAL.md usando **Postman**.
+
+---
+
+### **Paso 1: Verificar Servicios Dependientes**
+
+#### 1.1. Verificar Product Service
+
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30082/api/products`
+- **Send**
+
+**Response esperado:** Lista de productos disponibles
+
+**Ejemplo de productos:**
+- ID 1: Laptop Dell XPS 15 - $1299.99
+- ID 2: Mouse Logitech MX Master 3 - $99.99
+- ID 3: Teclado Mecánico Keychron K8 - $89.99
+- ID 4: Monitor LG UltraWide 34" - $449.99
+- ID 5: Auriculares Sony WH-1000XM5 - $349.99
+
+#### 1.2. Verificar Order Service
+
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/actuator/health`
+- **Send**
+
+**Response esperado:**
+```json
+{
+  "status": "UP",
+  "groups": ["liveness", "readiness"]
+}
+```
+
+---
+
+### **Paso 2: Consultar Productos Disponibles**
+
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30082/api/products`
+- **Send**
+
+**Response esperado:** Array con todos los productos disponibles
+
+**Anotar los IDs de productos que usarás para crear la orden.**
+
+---
+
+### **Paso 3: Crear Orden de Compra (RF-01)** ⭐
+
+**Escenario:** Usuario ID 1 quiere comprar:
+- 2x Laptop Dell XPS 15 (productId: 1)
+- 1x Teclado Mecánico (productId: 3)
+
+**En Postman:**
+- **Method:** `POST`
+- **URL:** `http://localhost:30083/api/orders`
+- **Headers:**
+  - `Content-Type: application/json`
+- **Body** (raw, JSON):
+```json
+{
+  "userId": 1,
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    },
+    {
+      "productId": 3,
+      "quantity": 1
+    }
+  ]
+}
+```
+- **Send**
+
+**Lo que sucede internamente:**
+
+1. ✅ Order Service recibe el request
+2. ✅ Para cada item:
+   - Llama a Product Service: `GET /api/products/1`
+   - Valida que producto existe
+   - Obtiene precio actual: `1299.99`
+   - Calcula subtotal: `2 × 1299.99 = 2599.98`
+   - Llama a Product Service: `GET /api/products/3`
+   - Obtiene precio: `89.99`
+   - Calcula subtotal: `1 × 89.99 = 89.99`
+3. ✅ Calcula total: `2599.98 + 89.99 = 2689.97`
+4. ✅ Genera order_number único: `ORD-2025-004`
+5. ✅ Guarda en BD:
+   - `INSERT INTO orders (...)`
+   - `INSERT INTO order_items (...)`
+6. ✅ Retorna orden completa con todos los datos
 
 **Response esperado (201 Created):**
 ```json
@@ -658,135 +955,25 @@ $response | ConvertTo-Json -Depth 10
 }
 ```
 
-#### 5.3. Verificar en Base de Datos
-
-```powershell
-# Conectarse a PostgreSQL
-docker exec -it postgres-order psql -U postgres -d orderdb
-
-# Verificar orden creada
-SELECT id, order_number, user_id, status, total_amount FROM orders WHERE id = 4;
-
-# Verificar items creados
-SELECT id, order_id, product_id, quantity, unit_price, subtotal 
-FROM order_items WHERE order_id = 4;
-```
+**⚠️ IMPORTANTE:** Anota el `id` de la orden creada (ej: `4`) para los siguientes pasos.
 
 ---
 
-### Endpoint 6: Health Endpoint Personalizado
+### **Paso 4: Consultar Orden Creada**
 
-**GET** `/api/orders/health`
-
-```powershell
-Invoke-WebRequest -Uri http://localhost:30083/api/orders/health -UseBasicParsing | Select-Object -ExpandProperty Content
-```
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/4` (usar el ID de la orden creada)
+- **Send**
 
 **Response esperado (200 OK):**
-```
-Order Service running with Clean Architecture!
-```
-
----
-
-## 🔄 FLUJO COMPLETO DEL SISTEMA
-
-### Escenario Completo: Simulación de E-commerce
-
-Este flujo demuestra el funcionamiento completo del sistema según el TRABAJO_FINAL.md.
-
----
-
-### **Paso 1: Verificar Servicios Dependientes**
-
-```powershell
-# 1.1. Verificar Product Service
-Invoke-WebRequest -Uri http://localhost:30082/api/products -UseBasicParsing
-
-# Deberías ver lista de productos disponibles
-
-# 1.2. Verificar Order Service
-Invoke-WebRequest -Uri http://localhost:30083/actuator/health -UseBasicParsing
-
-# Deberías ver: {"status":"UP"}
-```
-
----
-
-### **Paso 2: Consultar Productos Disponibles**
-
-```powershell
-# Obtener todos los productos
-$products = Invoke-RestMethod -Uri http://localhost:30082/api/products
-$products | ConvertTo-Json -Depth 5
-
-# Ejemplo de productos disponibles:
-# - ID 1: Laptop Dell XPS 15 - $1299.99
-# - ID 2: Mouse Logitech MX Master 3 - $99.99
-# - ID 3: Teclado Mecánico Keychron K8 - $89.99
-# - ID 4: Monitor LG UltraWide 34" - $449.99
-# - ID 5: Auriculares Sony WH-1000XM5 - $349.99
-```
-
----
-
-### **Paso 3: Crear Orden de Compra (RF-01)**
-
-**Escenario:** Usuario ID 1 quiere comprar:
-- 2x Laptop Dell XPS 15 (productId: 1)
-- 1x Teclado Mecánico (productId: 3)
-
-```powershell
-# 3.1. Preparar request
-$orderRequest = @{
-    userId = 1
-    items = @(
-        @{
-            productId = 1
-            quantity = 2
-        },
-        @{
-            productId = 3
-            quantity = 1
-        }
-    )
-} | ConvertTo-Json -Depth 10
-
-$headers = @{
-    "Content-Type" = "application/json"
-}
-
-# 3.2. Crear orden
-$newOrder = Invoke-RestMethod -Uri http://localhost:30083/api/orders -Method POST -Headers $headers -Body $orderRequest
-
-# 3.3. Ver respuesta
-$newOrder | ConvertTo-Json -Depth 10
-```
-
-**Lo que sucede internamente:**
-
-1. ✅ Order Service recibe el request
-2. ✅ Para cada item:
-   - Llama a Product Service: `GET /api/products/1`
-   - Valida que producto existe
-   - Obtiene precio actual: `1299.99`
-   - Calcula subtotal: `2 × 1299.99 = 2599.98`
-   - Llama a Product Service: `GET /api/products/3`
-   - Obtiene precio: `89.99`
-   - Calcula subtotal: `1 × 89.99 = 89.99`
-3. ✅ Calcula total: `2599.98 + 89.99 = 2689.97`
-4. ✅ Genera order_number único: `ORD-2025-004`
-5. ✅ Guarda en BD:
-   - `INSERT INTO orders (...)`
-   - `INSERT INTO order_items (...)`
-6. ✅ Retorna orden completa con todos los datos
-
-**Response esperado:**
 ```json
 {
   "id": 4,
   "orderNumber": "ORD-2025-004",
   "userId": 1,
+  "status": "PENDING",
+  "totalAmount": 2689.97,
   "items": [
     {
       "id": 7,
@@ -811,99 +998,185 @@ $newOrder | ConvertTo-Json -Depth 10
       "subtotal": 89.99
     }
   ],
-  "totalAmount": 2689.97,
-  "status": "PENDING",
-  "createdAt": "2025-02-21T10:30:00"
+  "createdAt": "2025-02-21T10:30:00",
+  "updatedAt": "2025-02-21T10:30:00"
 }
 ```
 
----
-
-### **Paso 4: Consultar Orden Creada**
-
-```powershell
-# 4.1. Obtener orden por ID
-$order = Invoke-RestMethod -Uri http://localhost:30083/api/orders/$($newOrder.id)
-$order | ConvertTo-Json -Depth 10
-
-# 4.2. Verificar que incluye información del producto
-# Deberías ver en cada item:
-# - product.id
-# - product.name
-# - product.price
-```
+**Verificar que incluye:**
+- ✅ Información completa del producto (`product.id`, `product.name`, `product.price`)
+- ✅ Cálculos correctos (`subtotal`, `totalAmount`)
+- ✅ Número de orden único (`orderNumber`)
 
 ---
 
 ### **Paso 5: Consultar Todas las Órdenes del Usuario**
 
-```powershell
-# Obtener todas las órdenes del usuario 1
-$userOrders = Invoke-RestMethod -Uri http://localhost:30083/api/orders/user/1
-$userOrders | ConvertTo-Json -Depth 10
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/user/1`
+- **Send**
 
-# Deberías ver todas las órdenes del usuario, incluyendo la recién creada
+**Response esperado (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "orderNumber": "ORD-2025-001",
+    "userId": 1,
+    "status": "CONFIRMED",
+    "totalAmount": 2849.97,
+    ...
+  },
+  {
+    "id": 3,
+    "orderNumber": "ORD-2025-003",
+    "userId": 1,
+    "status": "SHIPPED",
+    "totalAmount": 149.99,
+    ...
+  },
+  {
+    "id": 4,
+    "orderNumber": "ORD-2025-004",
+    "userId": 1,
+    "status": "PENDING",
+    "totalAmount": 2689.97,
+    ...
+  }
+]
 ```
+
+**Verificar que:**
+- ✅ Aparece la orden recién creada (ID 4)
+- ✅ Todas las órdenes pertenecen al usuario 1
 
 ---
 
-### **Paso 6: Verificar Comunicación Entre Servicios**
+### **Paso 6: Listar Todas las Órdenes del Sistema**
+
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders`
+- **Send**
+
+**Response esperado:** Array con todas las órdenes (de todos los usuarios)
+
+---
+
+### **Paso 7: Verificar Comunicación Entre Servicios**
+
+**Para verificar que Order Service se comunica con Product Service:**
 
 ```powershell
-# Ver logs de Order Service para confirmar llamadas a Product Service
+# Ver logs de Order Service
 $POD_NAME = (kubectl get pods -n order-service -o jsonpath='{.items[0].metadata.name}')
 kubectl logs $POD_NAME -n order-service | Select-String "Product Service"
+```
 
-# Deberías ver líneas como:
-# Calling Product Service to get product with id: 1
-# Product retrieved successfully from Product Service: ProductDto(...)
+**Deberías ver en los logs:**
+```
+Calling Product Service to get product with id: 1
+Product retrieved successfully from Product Service: ProductDto(...)
+Calling Product Service to get product with id: 3
+Product retrieved successfully from Product Service: ProductDto(...)
 ```
 
 ---
 
-### **Paso 7: Probar Casos de Error**
+### **Paso 8: Probar Casos de Error**
 
-#### 7.1. Producto Inexistente
+#### 8.1. Producto Inexistente
 
-```powershell
-$invalidOrder = @{
-    userId = 1
-    items = @(
-        @{
-            productId = 999  # Producto que no existe
-            quantity = 1
-        }
-    )
-} | ConvertTo-Json -Depth 10
-
-try {
-    Invoke-RestMethod -Uri http://localhost:30083/api/orders -Method POST -Headers $headers -Body $invalidOrder
-} catch {
-    $_.Exception.Response
+**En Postman:**
+- **Method:** `POST`
+- **URL:** `http://localhost:30083/api/orders`
+- **Headers:**
+  - `Content-Type: application/json`
+- **Body** (raw, JSON):
+```json
+{
+  "userId": 1,
+  "items": [
+    {
+      "productId": 999,
+      "quantity": 1
+    }
+  ]
 }
+```
+- **Send**
 
-# Response esperado (404):
-# {
-#   "error": "Product not found",
-#   "message": "Product with id 999 not found in Product Service"
-# }
+**Response esperado (404 Not Found):**
+```json
+{
+  "error": "Product not found",
+  "message": "Product with id 999 not found in Product Service",
+  "status": 404
+}
 ```
 
-#### 7.2. Orden con ID Inexistente
+#### 8.2. Orden con ID Inexistente
 
-```powershell
-try {
-    Invoke-RestMethod -Uri http://localhost:30083/api/orders/999
-} catch {
-    $_.Exception.Response
+**En Postman:**
+- **Method:** `GET`
+- **URL:** `http://localhost:30083/api/orders/999`
+- **Send**
+
+**Response esperado (404 Not Found):**
+```json
+{
+  "error": "Order not found",
+  "message": "Order with id 999 not found",
+  "status": 404
 }
-
-# Response esperado (404):
-# {
-#   "error": "Order not found",
-#   "message": "Order with id 999 not found"
-# }
 ```
+
+#### 8.3. Request Inválido (sin items)
+
+**En Postman:**
+- **Method:** `POST`
+- **URL:** `http://localhost:30083/api/orders`
+- **Headers:**
+  - `Content-Type: application/json`
+- **Body** (raw, JSON):
+```json
+{
+  "userId": 1,
+  "items": []
+}
+```
+- **Send**
+
+**Response esperado (400 Bad Request):**
+```json
+{
+  "error": "Invalid order",
+  "message": "Order must have at least one item",
+  "status": 400
+}
+```
+
+---
+
+### **Resumen del Flujo Completo**
+
+1. ✅ **Verificar servicios** → Product Service y Order Service funcionando
+2. ✅ **Consultar productos** → Ver productos disponibles
+3. ✅ **Crear orden** → POST con userId e items
+4. ✅ **Validación automática** → Order Service valida productos con Product Service
+5. ✅ **Cálculo automático** → Subtotal y total calculados
+6. ✅ **Guardado en BD** → Orden y items guardados
+7. ✅ **Consulta de orden** → Verificar orden creada
+8. ✅ **Consulta por usuario** → Ver todas las órdenes del usuario
+9. ✅ **Manejo de errores** → Probar casos de error
+
+**Este flujo demuestra que el Order Service cumple con todos los requerimientos del TRABAJO_FINAL.md:**
+- ✅ Registra órdenes de compra
+- ✅ Asocia órdenes a usuarios
+- ✅ Calcula montos automáticamente
+- ✅ Se integra con Product Service
+- ✅ Maneja errores correctamente
 
 ---
 
