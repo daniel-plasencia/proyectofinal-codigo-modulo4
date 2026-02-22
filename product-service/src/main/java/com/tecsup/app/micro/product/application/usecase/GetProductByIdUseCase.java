@@ -31,16 +31,21 @@ public class GetProductByIdUseCase {
         // --------------------------------------------------------
         // Llama al microservicio user-service
         // --------------------------------------------------------
-        // Validar que el usuario existe en userdb
-        User user = userClient.getUserById(prod.getCreatedBy());
-        log.info("Fetching user from userdb: {}", user);
-
-        if(user == null) {
-            log.warn("User with id {} not found in userdb", prod.getCreatedBy());
-            throw new UserNotFoundException(id);
+        // Intentar obtener el usuario creador, pero no fallar si no se puede
+        try {
+            User user = userClient.getUserById(prod.getCreatedBy());
+            log.info("Fetching user from userdb: {}", user);
+            
+            if(user != null) {
+                prod.setCreatedByUser(user);
+            } else {
+                log.warn("User with id {} not found in userdb, continuing without user info", prod.getCreatedBy());
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch user {} from userdb: {}. Continuing without user info.", 
+                    prod.getCreatedBy(), e.getMessage());
+            // Continuar sin el usuario creador - no es crítico para obtener el producto
         }
-
-        prod.setCreatedByUser(user);
 
         return prod;
     }

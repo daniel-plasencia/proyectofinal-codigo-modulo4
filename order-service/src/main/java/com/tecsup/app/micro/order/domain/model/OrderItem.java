@@ -39,10 +39,25 @@ public class OrderItem {
     
     /**
      * Valida que el item tenga los datos mínimos requeridos
+     * Para items nuevos (antes de validar con Product Service), solo requiere productId y quantity
+     * Para items validados, también requiere unitPrice y subtotal
      */
     public boolean isValid() {
-        return productId != null && productId > 0
-            && quantity != null && quantity > 0
-            && unitPrice != null && unitPrice.compareTo(BigDecimal.ZERO) >= 0;
+        // Validación básica: productId y quantity son obligatorios
+        if (productId == null || productId <= 0) {
+            return false;
+        }
+        if (quantity == null || quantity <= 0) {
+            return false;
+        }
+        // unitPrice y subtotal son opcionales al crear (se asignan después de validar con Product Service)
+        // Si están presentes, deben ser válidos
+        if (unitPrice != null && unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
+        if (subtotal != null && subtotal.compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
+        return true;
     }
 }

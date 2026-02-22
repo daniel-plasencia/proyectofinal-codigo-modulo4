@@ -746,35 +746,30 @@ Este es el endpoint principal que cumple con el requerimiento funcional RF-01.
   "id": 4,
   "orderNumber": "ORD-2025-004",
   "userId": 1,
+  "status": "PENDING",
+  "totalAmount": 2689.97,
   "items": [
     {
       "id": 7,
-      "product": {
-        "id": 1,
-        "name": "Laptop Dell XPS 15",
-        "price": 1299.99
-      },
+      "product": null,
       "quantity": 2,
       "unitPrice": 1299.99,
       "subtotal": 2599.98
     },
     {
       "id": 8,
-      "product": {
-        "id": 3,
-        "name": "Teclado Mecánico Keychron K8",
-        "price": 89.99
-      },
+      "product": null,
       "quantity": 1,
       "unitPrice": 89.99,
       "subtotal": 89.99
     }
   ],
-  "totalAmount": 2689.97,
-  "status": "PENDING",
-  "createdAt": "2025-02-21T10:30:00"
+  "createdAt": "2025-02-21T10:30:00",
+  "updatedAt": "2025-02-21T10:30:00"
 }
 ```
+
+**Nota importante:** El campo `product` aparece como `null` en la respuesta de creación porque se enriquece dinámicamente cuando se consulta la orden (GET). Para ver la información completa del producto, consulta la orden creada usando `GET /api/orders/{id}`.
 
 #### Verificar en Base de Datos (opcional):
 
@@ -925,35 +920,30 @@ Este flujo demuestra el funcionamiento completo del sistema según el TRABAJO_FI
   "id": 4,
   "orderNumber": "ORD-2025-004",
   "userId": 1,
+  "status": "PENDING",
+  "totalAmount": 2689.97,
   "items": [
     {
       "id": 7,
-      "product": {
-        "id": 1,
-        "name": "Laptop Dell XPS 15",
-        "price": 1299.99
-      },
+      "product": null,
       "quantity": 2,
       "unitPrice": 1299.99,
       "subtotal": 2599.98
     },
     {
       "id": 8,
-      "product": {
-        "id": 3,
-        "name": "Teclado Mecánico Keychron K8",
-        "price": 89.99
-      },
+      "product": null,
       "quantity": 1,
       "unitPrice": 89.99,
       "subtotal": 89.99
     }
   ],
-  "totalAmount": 2689.97,
-  "status": "PENDING",
-  "createdAt": "2025-02-21T10:30:00"
+  "createdAt": "2025-02-21T10:30:00",
+  "updatedAt": "2025-02-21T10:30:00"
 }
 ```
+
+**Nota:** El campo `product` aparece como `null` en la respuesta de creación. Se enriquece automáticamente cuando consultas la orden usando `GET /api/orders/{id}` (ver Paso 4).
 
 **⚠️ IMPORTANTE:** Anota el `id` de la orden creada (ej: `4`) para los siguientes pasos.
 
@@ -1330,7 +1320,25 @@ kubectl get configmap order-service-config -n order-service -o yaml
 
 ---
 
-### Problema 4: Maven Wrapper no funciona
+### Problema 4: Error 400 "Invalid order data. User ID and items are required"
+
+**Síntomas:**
+- Al crear orden con POST, recibe error 400
+- Mensaje: `"Invalid order data. User ID and items are required"`
+- Aunque el request tiene `userId` e `items` correctamente
+
+**Causa:**
+- Este error ya fue resuelto en la versión actual
+- Ocurría cuando la validación de `OrderItem` requería `unitPrice` antes de obtenerlo del Product Service
+
+**Solución (si ocurre):**
+- Verificar que estás usando la versión más reciente del código
+- El método `OrderItem.isValid()` ahora solo valida `productId` y `quantity` al crear
+- Los campos `unitPrice` y `subtotal` se asignan automáticamente después de validar con Product Service
+
+---
+
+### Problema 5: Maven Wrapper no funciona
 
 **Síntomas:**
 - Error: `.\mvnw.cmd no se reconoce`
@@ -1348,7 +1356,7 @@ ls .mvn\wrapper\
 
 ---
 
-### Problema 5: Puerto 30083 no responde
+### Problema 6: Puerto 30083 no responde
 
 **Solución:**
 ```powershell
