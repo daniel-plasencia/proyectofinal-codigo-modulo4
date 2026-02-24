@@ -37,6 +37,11 @@ public interface OrderRepository {
     Optional<Order> findByOrderNumber(String orderNumber);
     
     /**
+     * Obtiene el último número de orden (para inicializar el contador)
+     */
+    Optional<String> findLastOrderNumber();
+    
+    /**
      * Elimina una orden por ID
      */
     void deleteById(Long id);

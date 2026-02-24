@@ -92,6 +92,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
     
     @Override
+    public Optional<String> findLastOrderNumber() {
+        log.debug("Finding last order number");
+        List<String> orderNumbers = jpaOrderRepository.findAllOrderNumbersOrderedByIdDesc();
+        return orderNumbers.isEmpty() ? Optional.empty() : Optional.of(orderNumbers.get(0));
+    }
+    
+    @Override
     public void deleteById(Long id) {
         log.debug("Deleting order by id: {}", id);
         jpaOrderRepository.deleteById(id);

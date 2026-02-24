@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,10 +30,15 @@ public class CreateOrderUseCase {
     private final ProductClient productClient;
     
     // Contador para generar números de orden únicos
+    // Se inicializa en 1, pero se ajusta al iniciar basándose en la BD
     private static final AtomicInteger orderSequence = new AtomicInteger(1);
+    private static volatile boolean initialized = false;
     
     public Order execute(Order order) {
         log.debug("Executing CreateOrderUseCase for user: {}", order.getUserId());
+        
+        // Inicializar contador si no se ha hecho
+        initializeOrderSequence();
         
         // Validar datos de la orden
         if (!order.isValid()) {
@@ -118,5 +124,46 @@ public class CreateOrderUseCase {
         return items.stream()
                 .map(OrderItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    
+    /**
+     * Inicializa el contador de secuencia basándose en el último número de orden en la BD
+     * Esto evita duplicados cuando el servicio se reinicia
+     */
+    private void initializeOrderSequence() {
+        if (!initialized) {
+            synchronized (CreateOrderUseCase.class) {
+                if (!initialized) {
+                    try {
+                        Optional<String> lastOrderNumber = orderRepository.findLastOrderNumber();
+                        if (lastOrderNumber.isPresent()) {
+                            String lastNumber = lastOrderNumber.get();
+                            // Extraer el número de secuencia del formato ORD-YYYY-NNN
+                            // Ejemplo: ORD-2026-004 -> 4
+                            try {
+                                String[] parts = lastNumber.split("-");
+                                if (parts.length == 3 && parts[0].equals("ORD")) {
+                                    int lastSequence = Integer.parseInt(parts[2]);
+                                    // Inicializar con el siguiente número
+                                    orderSequence.set(lastSequence + 1);
+                                    log.info("Order sequence initialized from database. Last order: {}, Next sequence: {}", 
+                                            lastNumber, lastSequence + 1);
+                                } else {
+                                    log.warn("Could not parse last order number: {}. Starting from 1.", lastNumber);
+                                }
+                            } catch (NumberFormatException e) {
+                                log.warn("Could not parse sequence from order number: {}. Starting from 1.", lastNumber);
+                            }
+                        } else {
+                            log.info("No existing orders found. Starting sequence from 1.");
+                        }
+                    } catch (Exception e) {
+                        log.error("Error initializing order sequence from database: {}", e.getMessage());
+                        // Continuar con el valor por defecto (1)
+                    }
+                    initialized = true;
+                }
+            }
+        }
     }
 }
